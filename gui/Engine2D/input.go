@@ -1,4 +1,4 @@
-package GUI
+package Engine2D
 
 const (
 	escape        = KeyCode(27)
@@ -11,5 +11,3 @@ const (
 )
 
 type KeyCode uint8
-type EntityInputHandler func(Entity, KeyCode)
-type PhysicsEntityInputHandler func(IPhysicsEntity, KeyCode)

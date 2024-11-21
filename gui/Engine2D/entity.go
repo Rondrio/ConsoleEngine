@@ -1,10 +1,13 @@
-package GUI
+package Engine2D
 
 import (
+	GUI "consoleEngine/gui"
 	"image"
 
 	"github.com/google/uuid"
 )
+
+type EntityInputHandler func(Entity, KeyCode)
 
 type Entity interface {
 	GetId() string
@@ -13,11 +16,11 @@ type Entity interface {
 	SetTexture(image.Image)
 	GetTexture() image.Image
 
-	SetPosition(pos Coords)
-	GetPosition() Coords
+	SetPosition(pos GUI.Coords)
+	GetPosition() GUI.Coords
 
-	SetSize(size Coords)
-	GetSize() Coords
+	SetSize(size GUI.Coords)
+	GetSize() GUI.Coords
 
 	SetLayer(layer int)
 	GetLayer() int
@@ -33,14 +36,14 @@ type BaseEntity struct {
 	Screen   *Screen
 	Id       string
 	Texture  image.Image
-	Pos      Coords
-	Size     Coords
+	Pos      GUI.Coords
+	Size     GUI.Coords
 	Layer    int
 	Visible  bool
 	Rotation float64
 }
 
-func NewEntity(screen *Screen, texture image.Image, pos Coords, size Coords, layer int, inputHandler EntityInputHandler) *BaseEntity {
+func NewEntity(screen *Screen, texture image.Image, pos GUI.Coords, size GUI.Coords, layer int, inputHandler EntityInputHandler) *BaseEntity {
 	sprite := BaseEntity{
 		Screen:   screen,
 		Id:       uuid.NewString(),
@@ -80,19 +83,19 @@ func (entity *BaseEntity) GetTexture() image.Image {
 	return entity.Texture
 }
 
-func (entity *BaseEntity) SetPosition(pos Coords) {
+func (entity *BaseEntity) SetPosition(pos GUI.Coords) {
 	entity.Pos = pos
 }
 
-func (entity *BaseEntity) GetPosition() Coords {
+func (entity *BaseEntity) GetPosition() GUI.Coords {
 	return entity.Pos
 }
 
-func (entity *BaseEntity) SetSize(size Coords) {
+func (entity *BaseEntity) SetSize(size GUI.Coords) {
 	entity.Size = size
 }
 
-func (entity *BaseEntity) GetSize() Coords {
+func (entity *BaseEntity) GetSize() GUI.Coords {
 	return entity.Size
 }
 

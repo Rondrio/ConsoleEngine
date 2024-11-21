@@ -1,6 +1,7 @@
-package GUI
+package Engine2D
 
 import (
+	GUI "consoleEngine/gui"
 	"image"
 	"time"
 )
@@ -10,14 +11,16 @@ const (
 	physics_tick = 1000 / 60 * time.Millisecond // time between physics calculations in ms
 )
 
+type PhysicsEntityInputHandler func(IPhysicsEntity, KeyCode)
+
 type IPhysicsEntity interface {
 	Entity
 
 	SetCollision(collision bool)
 	GetCollision() bool
 
-	SetMomentum(momentum Coords)
-	GetMomentum() Coords
+	SetMomentum(momentum GUI.Coords)
+	GetMomentum() GUI.Coords
 
 	SetWeight(weight float64)
 	GetWeight() float64
@@ -26,14 +29,14 @@ type IPhysicsEntity interface {
 type PhysicsEntity struct {
 	*BaseEntity
 	Collision      bool
-	Momentum       Coords
+	Momentum       GUI.Coords
 	Weight         float64
 	PhysicsEnabled bool
 	Grounded       bool
 	InputHandler   PhysicsEntityInputHandler
 }
 
-func NewPhysicsEntity(screen *Screen, texture image.Image, pos Coords, size Coords, layer int, inputHandler PhysicsEntityInputHandler, collision bool, momentum Coords, weight float64) *PhysicsEntity {
+func NewPhysicsEntity(screen *Screen, texture image.Image, pos GUI.Coords, size GUI.Coords, layer int, inputHandler PhysicsEntityInputHandler, collision bool, momentum GUI.Coords, weight float64) *PhysicsEntity {
 	entity := NewEntity(screen, texture, pos, size, layer, nil)
 	physicsEntity := PhysicsEntity{
 		BaseEntity:     entity,
@@ -117,11 +120,11 @@ func (pe *PhysicsEntity) GetCollision() bool {
 	return pe.Collision
 }
 
-func (pe *PhysicsEntity) SetMomentum(momentum Coords) {
+func (pe *PhysicsEntity) SetMomentum(momentum GUI.Coords) {
 	pe.Momentum = momentum
 }
 
-func (pe *PhysicsEntity) GetMomentum() Coords {
+func (pe *PhysicsEntity) GetMomentum() GUI.Coords {
 	return pe.Momentum
 }
 

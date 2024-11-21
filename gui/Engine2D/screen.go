@@ -1,6 +1,7 @@
-package GUI
+package Engine2D
 
 import (
+	GUI "consoleEngine/gui"
 	"image/color"
 	"log"
 	"os"
@@ -10,18 +11,20 @@ import (
 )
 
 type Screen struct {
-	GUI          *GUI
+	GUI          *GUI.GUI
 	Layers       map[int]map[string]Entity
-	ScreenSize   Coords
+	ScreenSize   GUI.Coords
 	KeyEventChan chan KeyCode
 }
 
-func NewScreen(gui *GUI) *Screen {
+// NewScreen() creates and returns a new Screen on the GUI
+func NewScreen(gui *GUI.GUI) *Screen {
+	width, height, _ := term.GetSize(int(os.Stdin.Fd()))
 
 	screen := &Screen{
 		GUI:          gui,
 		Layers:       make(map[int]map[string]Entity),
-		ScreenSize:   Coords{float64(width), float64(height)},
+		ScreenSize:   GUI.Coords{float64(width), float64(height)},
 		KeyEventChan: make(chan KeyCode),
 	}
 
@@ -32,9 +35,10 @@ func NewScreen(gui *GUI) *Screen {
 	return screen
 }
 
+// Paint() paints the screen on the GUI
 func (screen *Screen) Paint() {
 
-	max := max(screen.Layers)
+	max := getHightestLayer(screen.Layers)
 
 	screen.GUI.FlushScreen()
 
@@ -53,6 +57,7 @@ func (screen *Screen) Paint() {
 	screen.GUI.PrintBuffer()
 }
 
+// AddEntity() adds a entity to the screen
 func (screen *Screen) AddEntity(entity Entity) {
 	if _, ok := screen.Layers[entity.GetLayer()]; !ok {
 		screen.Layers[entity.GetLayer()] = make(map[string]Entity)
@@ -60,12 +65,14 @@ func (screen *Screen) AddEntity(entity Entity) {
 	screen.Layers[entity.GetLayer()][entity.GetId()] = entity
 }
 
+// RemoveEntity() removes an entity from the screen
 func (screen *Screen) RemoveEntity(toBeDeleted Entity) {
 	for layerId := range screen.Layers {
 		delete(screen.Layers[layerId], toBeDeleted.GetId())
 	}
 }
 
+// FindEntity returns the entity with a given string
 func (screen *Screen) FindEntity(id string) Entity {
 	for _, layer := range screen.Layers {
 		if entity, ok := layer[id]; ok {
@@ -75,21 +82,25 @@ func (screen *Screen) FindEntity(id string) Entity {
 	return nil
 }
 
-func max(entities map[int]map[string]Entity) int {
-	var maxNumber int
-	for maxNumber = range entities {
+// getHightestLayer returns the highest layer
+func getHightestLayer(layers map[int]map[string]Entity) int {
+	var highestLayer int
+	// set highestLayer to the first layer in map
+	for highestLayer = range layers {
 		break
 	}
-	for n := range entities {
-		if n > maxNumber {
-			maxNumber = n
+
+	// iterate through layers, set highest layer to the hightest number
+	for n := range layers {
+		if n > highestLayer {
+			highestLayer = n
 		}
 	}
-	return maxNumber
+	return highestLayer
 }
 
+// readInput listens for input events in the console and pushes them into the KeyEventChan
 func (screen *Screen) readInput() {
-
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		log.Println(err)

@@ -2,6 +2,7 @@ package main
 
 import (
 	GUI "consoleEngine/gui"
+	"consoleEngine/gui/Engine2D"
 	"image"
 	"image/png"
 	"log"
@@ -13,24 +14,24 @@ var laser image.Image
 
 func main() {
 
-	shrek, err := loadTexture("textures/shrek.png")
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// shrek, err := loadTexture("textures/shrek.png")
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
-	laser, err = loadTexture("textures/laser.png")
+	laser, err := loadTexture("../../textures/boobies.png")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	gui := GUI.New()
-	screen := GUI.NewScreen(gui)
+	screen := Engine2D.NewScreen(gui)
 
-	shrekEntity := GUI.NewPhysicsEntity(
+	shrekEntity := Engine2D.NewPhysicsEntity(
 		screen,
-		shrek,
+		laser,
 		GUI.Coords{X: 0, Y: 0},
 		GUI.Coords{X: 25, Y: 15},
 		0,
@@ -40,31 +41,31 @@ func main() {
 		100,
 	)
 
-	shrekEntity2 := GUI.NewPhysicsEntity(
-		screen,
-		shrek,
-		GUI.Coords{X: 100, Y: 0},
-		GUI.Coords{X: 25, Y: 15},
-		1,
-		nil,
-		false,
-		GUI.Coords{X: -1, Y: 0},
-		50)
+	// shrekEntity2 := Engine2D.NewPhysicsEntity(
+	// 	screen,
+	// 	shrek,
+	// 	GUI.Coords{X: 100, Y: 0},
+	// 	GUI.Coords{X: 25, Y: 15},
+	// 	1,
+	// 	nil,
+	// 	false,
+	// 	GUI.Coords{X: -1, Y: 0},
+	// 	50)
 
-	shrekEntity3 := GUI.NewPhysicsEntity(
-		screen,
-		shrek,
-		GUI.Coords{X: 200, Y: 0},
-		GUI.Coords{X: 25, Y: 15},
-		2,
-		nil,
-		false,
-		GUI.Coords{X: 1, Y: 0},
-		1)
+	// shrekEntity3 := Engine2D.NewPhysicsEntity(
+	// 	screen,
+	// 	shrek,
+	// 	GUI.Coords{X: 200, Y: 0},
+	// 	GUI.Coords{X: 25, Y: 15},
+	// 	2,
+	// 	nil,
+	// 	false,
+	// 	GUI.Coords{X: 1, Y: 0},
+	// 	1)
 
 	screen.AddEntity(shrekEntity)
-	screen.AddEntity(shrekEntity2)
-	screen.AddEntity(shrekEntity3)
+	// screen.AddEntity(shrekEntity2)
+	// screen.AddEntity(shrekEntity3)
 
 	//	go Screensaver(screen, shrekEntity)
 	//	go Screensaver(screen, shrekEntity2)
@@ -111,7 +112,7 @@ func Screensaver(screen *GUI.Screen, entity GUI.IEntity) {
 }
 */
 
-func handleInput(entity GUI.IPhysicsEntity, key GUI.KeyCode) {
+func handleInput(entity Engine2D.IPhysicsEntity, key Engine2D.KeyCode) {
 	step := 3.0
 	pos := entity.GetPosition()
 	mom := entity.GetMomentum()
@@ -119,17 +120,17 @@ func handleInput(entity GUI.IPhysicsEntity, key GUI.KeyCode) {
 	screen := entity.GetScreen()
 
 	switch key {
-	case GUI.KeyCode_W:
+	case Engine2D.KeyCode_W:
 		if pos.Y+entity.GetSize().Y >= screen.ScreenSize.Y {
 			mom.Y += -5
 		}
-	case GUI.KeyCode_A:
+	case Engine2D.KeyCode_A:
 		mom.X -= step
-	case GUI.KeyCode_S:
-	case GUI.KeyCode_D:
+	case Engine2D.KeyCode_S:
+	case Engine2D.KeyCode_D:
 		mom.X += step
-	case GUI.KeyCode_Space:
-		laserEntity := GUI.NewEntity(
+	case Engine2D.KeyCode_Space:
+		laserEntity := Engine2D.NewEntity(
 			entity.GetScreen(),
 			laser,
 			GUI.Coords{X: 0, Y: 0},
@@ -150,7 +151,7 @@ func handleInput(entity GUI.IPhysicsEntity, key GUI.KeyCode) {
 
 }
 
-func laserMovement(screen *GUI.Screen, entity GUI.Entity, stepX int, stepY int) {
+func laserMovement(screen *Engine2D.Screen, entity Engine2D.Entity, stepX int, stepY int) {
 	pos := entity.GetPosition()
 	for pos.X < screen.ScreenSize.X || pos.Y < screen.ScreenSize.Y || pos.X > 0 || pos.Y > 0 {
 		pos.X += float64(stepX)

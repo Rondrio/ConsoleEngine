@@ -36,11 +36,15 @@ var (
 		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgCyan,
 		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiCyan,
 
-		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.BgYellow,    // Purple M
-		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiMagenta, // Magenta M
+		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.BgYellow, // Purple M
+		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiYellow, // Magenta M
 
 		{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.BgHiBlack, // Gray M
 		{R: 0xE0, G: 0xE0, B: 0xE0, A: 0xFF}: paintColor.BgWhite,   // light gray
+
+		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgMagenta, // Magenta M
+		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiMagenta, // Magenta M
+
 	}
 
 	COLORS_FOREGROUND = map[color.RGBA]paintColor.Attribute{
@@ -55,16 +59,20 @@ var (
 		{R: 0xFF, G: 0x99, B: 0x33, A: 0xFF}: paintColor.FgYellow,   // Orange
 
 		{R: 0x00, G: 0x00, B: 0x00, A: 0xFF}: paintColor.FgBlack,
-		{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgHiWhite,
+		{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.FgHiBlack, // Gray M
 
 		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgCyan,
 		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgHiCyan,
 
-		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.FgYellow,    // Purple M
+		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.FgYellow, // Purple M
+		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgHiYellow, // Magenta M
+
+		{R: 0xE0, G: 0xE0, B: 0xE0, A: 0xFF}: paintColor.FgWhite, // light gray
+		{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgHiWhite,
+
+		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgMagenta, // Magenta M
 		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgHiMagenta, // Magenta M
 
-		{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.FgHiBlack, // Gray M
-		{R: 0xE0, G: 0xE0, B: 0xE0, A: 0xFF}: paintColor.FgWhite,   // light gray
 	}
 
 	width       int
@@ -94,6 +102,7 @@ func init() {
 	cursorReset = fmt.Sprintf("\033[%dD\033[%dA", width, height)
 }
 
+// New returns a new GUI Instance
 func New() *GUI {
 	screenBuffer := make([][]pixel, height)
 	for index := range screenBuffer {
@@ -108,7 +117,7 @@ func New() *GUI {
 	return gui
 }
 
-// paint image into the screenbuffer
+// PaintImage paints an image into the screenbuffer
 func (gui *GUI) PaintImage(image image.Image, pos Coords, size Coords) {
 	screenPos := pos
 	var imagePos Coords
@@ -126,8 +135,8 @@ func (gui *GUI) PaintImage(image image.Image, pos Coords, size Coords) {
 			backgroundChan := make(chan paintColor.Attribute)
 			foregroundChan := make(chan paintColor.Attribute)
 
-			go gui.getColor(location_background, backgroundChan, image, imagePos, screenPos)
-			go gui.getColor(location_foreground, foregroundChan, image, imagePos, screenPos)
+			go gui.GetColor(location_background, backgroundChan, image, imagePos, screenPos)
+			go gui.GetColor(location_foreground, foregroundChan, image, imagePos, screenPos)
 
 			background = <-backgroundChan
 			foreground = <-foregroundChan
@@ -142,7 +151,7 @@ func (gui *GUI) PaintImage(image image.Image, pos Coords, size Coords) {
 	}
 }
 
-// reset the screen buffer to a white screen
+// FlushScreen resets the screen buffer to a white screen
 func (gui *GUI) FlushScreen() {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -153,7 +162,7 @@ func (gui *GUI) FlushScreen() {
 	}
 }
 
-// print screenBuffer to terminal
+// PrintBuffer prints the screenBuffer to terminal
 func (gui *GUI) PrintBuffer() {
 	var buf bytes.Buffer
 	buf.Write([]byte(cursorReset))
@@ -167,8 +176,8 @@ func (gui *GUI) PrintBuffer() {
 	io.Copy(os.Stdout, &buf)
 }
 
-// get best matching color for a pixel
-func (gui *GUI) getColor(loc location, returnChan chan paintColor.Attribute, image image.Image, imagePos Coords, screenPos Coords) {
+// GetColor returns the best matching color for a pixel
+func (gui *GUI) GetColor(loc location, returnChan chan paintColor.Attribute, image image.Image, imagePos Coords, screenPos Coords) {
 	var diff uint32 = 0xFFFFFFFF
 
 	var toBeReturned paintColor.Attribute
