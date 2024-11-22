@@ -1,12 +1,10 @@
-package GUI
+package gui
 
 import (
 	"bytes"
 	"fmt"
 	"image"
-	"image/color"
 	"io"
-	"math"
 	"os"
 
 	paintColor "github.com/fatih/color"
@@ -19,59 +17,59 @@ const (
 )
 
 var (
-	COLORS_BACKGROUND = map[color.RGBA]paintColor.Attribute{
+	COLORS_BACKGROUND_4bit = map[byte]paintColor.Attribute{
 		/* A12830 - FF584F*/
-		{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF}: paintColor.BgRed,   // 	Red Range
-		{R: 0x99, G: 0x00, B: 0x00, A: 0xFF}: paintColor.BgHiRed, // Red Range
+		0b000: paintColor.BgHiBlack,
+		//{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.BgHiBlack, // Gray M
 
-		{R: 0x00, G: 0x00, B: 0xFF, A: 0xFF}: paintColor.BgBlue,
-		{R: 0x99, G: 0xCC, B: 0xFF, A: 0xFF}: paintColor.BgHiBlue,
+		0b001: paintColor.BgHiBlue,
+		//{R: 0x99, G: 0xCC, B: 0xFF, A: 0xFF}: paintColor.BgHiBlue,
 
-		{R: 0xFF, G: 0xFF, B: 0x00, A: 0xFF}: paintColor.BgHiYellow, //paintColor.FgHiGreen,
-		{R: 0xFF, G: 0x99, B: 0x33, A: 0xFF}: paintColor.BgYellow,   // Orange
+		0b010: paintColor.BgHiGreen,
+		//0b010101: paintColor.BgHiGreen,
 
-		{R: 0x00, G: 0x00, B: 0x00, A: 0xFF}: paintColor.BgBlack,
-		{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiWhite,
+		0b011: paintColor.BgHiCyan,
+		//{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiCyan,
 
-		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgCyan,
-		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiCyan,
+		0b100: paintColor.BgHiRed, // 	Red Range
+		//{R: 0x99, G: 0x00, B: 0x00, A: 0xFF}: paintColor.BgHiRed, // Red Range
 
-		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.BgYellow, // Purple M
-		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiYellow, // Magenta M
+		0b101: paintColor.BgHiMagenta, // Magenta M
+		//{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiMagenta, // Magenta M
 
-		{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.BgHiBlack, // Gray M
-		{R: 0xE0, G: 0xE0, B: 0xE0, A: 0xFF}: paintColor.BgWhite,   // light gray
+		0b110: paintColor.BgHiYellow, // Orange
+		//		{R: 0xFF, G: 0xFF, B: 0x00, A: 0xFF}: paintColor.BgHiYellow, //paintColor.FgHiGreen,
 
-		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgMagenta, // Magenta M
-		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiMagenta, // Magenta M
-
+		0b111: paintColor.BgHiWhite, // light gray
+		//{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiWhite,
 	}
 
-	COLORS_FOREGROUND = map[color.RGBA]paintColor.Attribute{
+	COLORS_FOREGROUND_4bit = map[byte]paintColor.Attribute{
 		/* A12830 - FF584F*/
-		{R: 0xFF, G: 0x00, B: 0x00, A: 0xFF}: paintColor.FgRed,   // 	Red Range
-		{R: 0x99, G: 0x00, B: 0x00, A: 0xFF}: paintColor.FgHiRed, // Red Range
+		/* A12830 - FF584F*/
+		0b000: paintColor.FgHiBlack,
+		//{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.BgHiBlack, // Gray M
 
-		{R: 0x00, G: 0x00, B: 0xFF, A: 0xFF}: paintColor.FgBlue,
-		{R: 0x99, G: 0xCC, B: 0xFF, A: 0xFF}: paintColor.FgHiBlue,
+		0b001: paintColor.FgHiBlue,
+		//{R: 0x99, G: 0xCC, B: 0xFF, A: 0xFF}: paintColor.BgHiBlue,
 
-		{R: 0xFF, G: 0xFF, B: 0x00, A: 0xFF}: paintColor.FgHiYellow, //paintColor.FgHiGreen,
-		{R: 0xFF, G: 0x99, B: 0x33, A: 0xFF}: paintColor.FgYellow,   // Orange
+		0b010: paintColor.FgHiGreen,
+		//	{R: 0, G: 1, B: 0, A: 0xFF}: paintColor.BgHiGreen,
 
-		{R: 0x00, G: 0x00, B: 0x00, A: 0xFF}: paintColor.FgBlack,
-		{R: 0x29, G: 0x29, B: 0x29, A: 0xFF}: paintColor.FgHiBlack, // Gray M
+		0b011: paintColor.FgHiCyan,
+		//{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiCyan,
 
-		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgCyan,
-		{R: 0x00, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgHiCyan,
+		0b100: paintColor.FgHiRed, // 	Red Range
+		//{R: 0x99, G: 0x00, B: 0x00, A: 0xFF}: paintColor.BgHiRed, // Red Range
 
-		{R: 0x99, G: 0x00, B: 0x4c, A: 0xFF}: paintColor.FgYellow, // Purple M
-		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgHiYellow, // Magenta M
+		0b101: paintColor.FgHiMagenta, // Magenta M
+		//{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.BgHiMagenta, // Magenta M
 
-		{R: 0xE0, G: 0xE0, B: 0xE0, A: 0xFF}: paintColor.FgWhite, // light gray
-		{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.FgHiWhite,
+		0b110: paintColor.FgHiYellow, // Orange
+		//		{R: 0xFF, G: 0xFF, B: 0x00, A: 0xFF}: paintColor.BgHiYellow, //paintColor.FgHiGreen,
 
-		//		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgMagenta, // Magenta M
-		{R: 0x99, G: 0x00, B: 0x99, A: 0xFF}: paintColor.FgHiMagenta, // Magenta M
+		0b111: paintColor.FgHiWhite, // light gray
+		//{R: 0xFF, G: 0xFF, B: 0xFF, A: 0xFF}: paintColor.BgHiWhite,
 
 	}
 
@@ -135,8 +133,8 @@ func (gui *GUI) PaintImage(image image.Image, pos Coords, size Coords) {
 			backgroundChan := make(chan paintColor.Attribute)
 			foregroundChan := make(chan paintColor.Attribute)
 
-			go gui.GetColor(location_background, backgroundChan, image, imagePos, screenPos)
-			go gui.GetColor(location_foreground, foregroundChan, image, imagePos, screenPos)
+			go gui.GetColor_4bit(location_background, backgroundChan, image, imagePos, screenPos)
+			go gui.GetColor_4bit(location_foreground, foregroundChan, image, imagePos, screenPos)
 
 			background = <-backgroundChan
 			foreground = <-foregroundChan
@@ -177,8 +175,7 @@ func (gui *GUI) PrintBuffer() {
 }
 
 // GetColor returns the best matching color for a pixel
-func (gui *GUI) GetColor(loc location, returnChan chan paintColor.Attribute, image image.Image, imagePos Coords, screenPos Coords) {
-	var diff uint32 = 0xFFFFFFFF
+func (gui *GUI) GetColor_4bit(loc location, returnChan chan paintColor.Attribute, image image.Image, imagePos Coords, screenPos Coords) {
 
 	var toBeReturned paintColor.Attribute
 
@@ -186,15 +183,11 @@ func (gui *GUI) GetColor(loc location, returnChan chan paintColor.Attribute, ima
 	case location_background:
 		r, g, b, a := image.At(int(imagePos.X), int(imagePos.Y)).RGBA()
 		if a > 200 {
-			for color := range COLORS_BACKGROUND {
-				cR, cG, cB, cA := color.RGBA()
-
-				nDiff := uint32(math.Abs(float64(a)-float64(cA)) + math.Abs(float64(r)-float64(cR)) + math.Abs(float64(g)-float64(cG)) + math.Abs(float64(b)-float64(cB)))
-				if diff > nDiff {
-					diff = nDiff
-					toBeReturned = COLORS_BACKGROUND[color]
-				}
-			}
+			shiftR := r >> 15
+			shiftG := g >> 15
+			shiftB := b >> 15
+			shiftedRGB := (shiftR << 2) | (shiftG << 1) | shiftB
+			toBeReturned = COLORS_BACKGROUND_4bit[byte(shiftedRGB)]
 		} else {
 			toBeReturned = gui.screenBuffer[int(screenPos.Y)][int(screenPos.X)].colorBackground
 		}
@@ -202,15 +195,11 @@ func (gui *GUI) GetColor(loc location, returnChan chan paintColor.Attribute, ima
 	case location_foreground:
 		r, g, b, a := image.At(int(imagePos.X), int(imagePos.Y)+1).RGBA()
 		if a > 200 {
-			for color := range COLORS_FOREGROUND {
-				cR, cG, cB, cA := color.RGBA()
-
-				nDiff := uint32(math.Abs(float64(a)-float64(cA)) + math.Abs(float64(r)-float64(cR)) + math.Abs(float64(g)-float64(cG)) + math.Abs(float64(b)-float64(cB)))
-				if diff > nDiff {
-					diff = nDiff
-					toBeReturned = COLORS_FOREGROUND[color]
-				}
-			}
+			shiftR := r >> 15
+			shiftG := g >> 15
+			shiftB := b >> 15
+			shiftedRGB := (shiftR << 2) | (shiftG << 1) | shiftB
+			toBeReturned = COLORS_FOREGROUND_4bit[byte(shiftedRGB)]
 		} else {
 			toBeReturned = gui.screenBuffer[int(screenPos.Y)][int(screenPos.X)].colorForeground
 		}
