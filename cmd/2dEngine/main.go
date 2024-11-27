@@ -1,8 +1,8 @@
 package main
 
 import (
+	"consoleEngine/Engine2D"
 	GUI "consoleEngine/gui"
-	"consoleEngine/gui/Engine2D"
 	"image"
 	"image/png"
 	"log"
@@ -20,7 +20,7 @@ func main() {
 	// 	return
 	// }
 
-	laser, err := loadTexture("../../textures/boobies.png")
+	laser, err := loadTexture("../../textures/spongebob.png")
 	if err != nil {
 		log.Println(err)
 		return
@@ -33,9 +33,9 @@ func main() {
 		screen,
 		laser,
 		GUI.Coords{X: 0, Y: 0},
-		GUI.Coords{X: 25, Y: 15},
+		GUI.Coords{X: screen.ScreenSize.X, Y: screen.ScreenSize.Y},
 		0,
-		handleInput,
+		nil, //handleInput,
 		false,
 		GUI.Coords{X: 0, Y: 0},
 		100,

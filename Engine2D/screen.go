@@ -30,7 +30,7 @@ func NewScreen(gui *GUI.GUI) *Screen {
 
 	screen.Layers = make(map[int]map[string]Entity)
 
-	go screen.readInput()
+	// go screen.readInput()
 
 	return screen
 }
